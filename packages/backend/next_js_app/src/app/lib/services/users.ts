@@ -1,17 +1,29 @@
    // lib/services/users.ts
-   import { getDatabaseConnection } from '../../../../../db/schema';
-   import { user } from '../models/user';
+   import { db } from '../db/index';
+   import { user } from '../db/schema';
+   import { eq, asc, gt } from 'drizzle-orm';
 
    export async function createUser(name: string, email: string) {
-    const db = await getDatabaseConnection();
-    return await db.insert(user).values({ name, email }).returning();
+    return await db.insert(user).values({name, email}).returning();
   }
 
    export async function getAllUsers(page: number, limit: number) {
      const offset = (page - 1) * limit;
-     return await getDatabaseConnection.select().from(user).limit(limit).offset(offset);
+     return await db.select().from(user).limit(limit).offset(offset);
    }
 
    export async function deleteUser(id: number) {
-     return await getDatabaseConnection.delete(user).where('id', '=', id);
+     return await db.delete(user).where(eq(user.id, id));
    }
+
+ export const nextUserPage = async (cursor?: number, pageSize = 3) => {
+ return await db
+ .select()
+ .from(user)
+ .where(cursor ? gt(user.id, cursor) : undefined)
+ .limit(pageSize)
+ .orderBy(asc(user.id));
+};
+
+
+
