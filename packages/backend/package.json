@@ -29,9 +29,11 @@
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.33.0",
     "pg": "^8.13.0",
-    "pg-core": "^0.1.15"
+    "pg-core": "^0.1.15",
+    "postgres": "^3.4.4"
   },
   "devDependencies": {
-    "@types/pg": "^8.11.10"
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.24.2"
   }
 }
