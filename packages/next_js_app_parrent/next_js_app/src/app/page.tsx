@@ -7,6 +7,7 @@ interface User {
   name: string;
   email: string;
   createdAt: Date;
+  deleteId: number;
 }
 
 interface PaginationProps {
@@ -89,6 +90,36 @@ export default function Home() {
     setCurrentPage(page);
   };
 
+const handleDelete = async (userId: number) => {
+  const confirm = window.confirm(`Are you sure you want to delete user ID ${userId}?`);
+  if (confirm) {
+    try {
+      const response = await fetch('/api/delete-user', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (response.ok) {
+        // Refresh the list of users
+        const refreshResponse = await fetch(`/api/users?offset=${(currentPage - 1) * 10}`);
+        const refreshedData = await refreshResponse.json();
+        setUsers(refreshedData.users || []);
+        setTotal(refreshedData.totalCount);
+        alert('User successfully deleted!');
+      } else {
+        const errorMessage = await response.text();
+        alert(`Failed to delete user: ${errorMessage}`);
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('An error occurred while deleting the user.');
+    }
+  }
+};
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">All Users</h1>
@@ -98,26 +129,35 @@ export default function Home() {
         <p>No users found.</p>
       ) : (
         <>
-         <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-           <thead className="bg-gray-100">
-             <tr>
-               <th className="px-4 py-2 text-left">ID</th>
-               <th className="px-4 py-2 text-left">Name</th>
-               <th className="px-4 py-2 text-left">Email</th>
-               <th className="px-4 py-2 text-left">Created At</th>
-             </tr>
-           </thead>
-           <tbody>
-             {users.map((user, index) => (
-               <tr key={user.id} className={` ${index % 2 === 0 ? 'bg-gray-50' : ''}`}>
-                 <td className="px-4 py-2">{user.id}</td>
-                 <td className="px-4 py-2">{user.name}</td>
-                 <td className="px-4 py-2">{user.email}</td>
-                 <td className="px-4 py-2">{new Date(user.createdAt).toLocaleDateString()}</td>
-               </tr>
-             ))}
-           </tbody>
-         </table>
+          <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-4 py-2 text-left">ID</th>
+                <th className="px-4 py-2 text-left">Name</th>
+                <th className="px-4 py-2 text-left">Email</th>
+                <th className="px-4 py-2 text-left">Created At</th>
+                <th className="px-4 py-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user, index) => (
+                <tr key={user.id} className={` ${index % 2 === 0 ? 'bg-gray-50' : ''}`}>
+                  <td className="px-4 py-2">{user.id}</td>
+                  <td className="px-4 py-2">{user.name}</td>
+                  <td className="px-4 py-2">{user.email}</td>
+                  <td className="px-4 py-2">{new Date(user.createdAt).toLocaleDateString()}</td>
+                 <td className="px-4 py-2 flex justify-end">
+                   <button
+                     onClick={() => handleDelete(user.id)}
+                     className="px-4 py-2 ml-2 rounded bg-red-500 text-white transition-colors duration-200"
+                   >
+                     Delete
+                   </button>
+                 </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
           <Pagination
             total={total}
             limit={10}
