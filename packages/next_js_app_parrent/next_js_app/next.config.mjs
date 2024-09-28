@@ -1,14 +1,10 @@
 /** @type {import('next').NextConfig} */
+import dotenv from 'dotenv';
 
 const nextConfig = {
-    reactStrictMode: true,
-    experimental: {
-      esmExternals: true,
-    },
-  };
+  env: {
+    DATABASE_URL: 'postgresql://postgres:@localhost:5432/searchlandai',
+  },
+};
 
-export default nextConfig;
-
-
-
-// You are connected to database "searchlandai" as user "postgres" via socket in "/tmp" at port "5432".
+export default dotenv.config().parsed ? nextConfig : {};
